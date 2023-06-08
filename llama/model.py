@@ -256,6 +256,6 @@ class Transformer(nn.Module):
 
         self.hl = h[:, -1, :]
         self.all_activations[:,-1] = self.hl
-        hl = hl.to(self.output.parameters().__next__().device)
+        hl = self.hl.to(self.output.parameters().__next__().device)
         output = self.output(hl)
         return output.float()
