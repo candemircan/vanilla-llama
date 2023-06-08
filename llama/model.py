@@ -249,7 +249,7 @@ class Transformer(nn.Module):
         for layer in self.layers:
             h = h.to(layer.parameters().__next__().device)
             h = layer(h, start_pos, freqs_cis, mask)
-            self.all_activations.append(h)
+            self.all_activations.append(h[:, -1, :])
         self.all_activations = torch.stack(self.all_activations).squeeze()
         h = h.to(self.norm.parameters().__next__().device)
         h = self.norm(h)
