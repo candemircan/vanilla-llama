@@ -5,7 +5,9 @@ from accelerate import init_empty_weights, load_checkpoint_and_dispatch
 from tqdm import tqdm
 from pathlib import Path
 import os
-from llama import ModelArgs, Tokenizer, Transformer, LLaMA
+from .generation import LLaMA
+from .model import ModelArgs, Transformer
+from .tokenizer import Tokenizer
 
 class LLaMAInference:
     def __init__(self, llama_path, model, device_map="auto", **kwargs):

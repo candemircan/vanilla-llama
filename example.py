@@ -1,6 +1,6 @@
 import time
 import argparse
-from inference import LLaMAInference
+from llama.inference import LLaMAInference
 
 if __name__ == "__main__":
     models = ["7B", "13B", "30B", "65B"]

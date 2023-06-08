@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Union
 
-from inference import LLaMAInference
+from llama.inference import LLaMAInference
 
 def create_app(args):
     app = FastAPI()
