@@ -56,6 +56,7 @@ class LLaMAInference:
         repetition_penalty=1,
         stop_ids=None,
         stop_words=None,
+        lesion: torch.Tensor | None = None,
     ):
         start_time = time.time()
         results, stats = self.generator.generate(
@@ -66,6 +67,7 @@ class LLaMAInference:
             repetition_penalty=repetition_penalty,
             stop_ids=stop_ids,
             stop_words=stop_words,
+            lesion=lesion,
         )
         end_time = time.time()
         stats["total_seconds"] = end_time - start_time

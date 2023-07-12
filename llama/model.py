@@ -232,7 +232,9 @@ class Transformer(nn.Module):
         )
 
     @torch.inference_mode()
-    def forward(self, tokens: torch.Tensor, start_pos: int):
+    def forward(
+        self, tokens: torch.Tensor, start_pos: int, lesion: torch.Tensor | None = None
+    ):
         _bsz, seqlen = tokens.shape
         h = self.tok_embeddings(tokens)
         self.freqs_cis = self.freqs_cis.to(h.device)
@@ -252,6 +254,8 @@ class Transformer(nn.Module):
         h = self.norm(h)
 
         self.hl = h[:, -1, :]
+        if lesion is not None:
+            self.hl = torch.where(lesion == 0, self.hl, 0)
         hl = self.hl.to(self.output.parameters().__next__().device)
         output = self.output(hl)
         return output.float()

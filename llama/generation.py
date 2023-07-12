@@ -1,6 +1,6 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # This software may be used and distributed according to the terms of the GNU General Public License version 3.
-
+from __future__ import annotations
 from typing import List
 
 import torch
@@ -52,6 +52,7 @@ class LLaMA:
         stop_ids: List[int] = None,
         stop_words: List[str] = None,
         repetition_penalty: float = 1.0,
+        lesion: torch.Tensor | None = None,
     ) -> List[str]:
         bsz = len(prompts)
         params = self.model.params
@@ -72,7 +73,11 @@ class LLaMA:
         start_pos = min_prompt_size
         prev_pos = 0
         for cur_pos in range(start_pos, total_len):
-            logits = self.model.forward(tokens[:, prev_pos:cur_pos], prev_pos)
+            logits = self.model.forward(
+                tokens[:, prev_pos:cur_pos],
+                prev_pos,
+                lesion=lesion if cur_pos == (total_len - 1) else None,
+            )
             if repetition_penalty != 1.0:
                 logits_new = logits.clone()
                 batch_size = len(tokens)
