@@ -253,13 +253,12 @@ class Transformer(nn.Module):
             h = layer(h, start_pos, freqs_cis, mask)
         h = h.to(self.norm.parameters().__next__().device)
         h = self.norm(h)
-
-        self.hl = h[:, -1, :]
         hl = h[:, -1, :]
 
         if lesion is not None:
             hl = hl.to("cuda:0")
             hl = torch.where(lesion == 0, hl, 0)
         hl = hl.to(self.output.parameters().__next__().device)
+        self.hl = h[:, -1, :]
         output = self.output(hl)
         return output.float()
