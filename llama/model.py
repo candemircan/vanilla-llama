@@ -255,11 +255,11 @@ class Transformer(nn.Module):
         h = self.norm(h)
 
         self.hl = h[:, -1, :]
+        hl = h[:, -1, :]
 
         if lesion is not None:
-            hl = h[:, -1, :]
             hl = hl.to("cuda:0")
             hl = torch.where(lesion == 0, hl, 0)
-        hl = self.hl.to(self.output.parameters().__next__().device)
+        hl = hl.to(self.output.parameters().__next__().device)
         output = self.output(hl)
         return output.float()
