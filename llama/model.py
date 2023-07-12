@@ -256,6 +256,12 @@ class Transformer(nn.Module):
         hl = h[:, -1, :]
 
         if lesion is not None:
+            # assigningg hl to cuda:0 is hacky.
+            # hl and lesion tensors must be on the same device
+            # I don't know if I can know beforehand where hl is
+            # to resolve it, I assign it to cuda:0
+            # therefore, lesion is also assigned to the same device
+            # which is done outside this module
             hl = hl.to("cuda:0")
             hl = torch.where(lesion == 0, hl, 0)
         hl = hl.to(self.output.parameters().__next__().device)
