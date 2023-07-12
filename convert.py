@@ -8,16 +8,13 @@ import os
 import shutil
 from llama import ModelArgs, Tokenizer, Transformer
 
+
 def convert(model_path, tokenizer_path, output_path):
     checkpoints = sorted(Path(model_path).glob("*.pth"))
     with open(Path(model_path) / "params.json", "r") as f:
         params = json.loads(f.read())
-    
-    model_args = ModelArgs(
-        max_seq_len=2048,
-        max_batch_size=1,
-        **params
-    )
+
+    model_args = ModelArgs(max_seq_len=2048, max_batch_size=1, **params)
 
     tokenizer = Tokenizer(model_path=tokenizer_path)
     model_args.vocab_size = tokenizer.n_words
@@ -49,20 +46,22 @@ def convert(model_path, tokenizer_path, output_path):
         checkpoint = torch.load(ckpt, map_location="cpu")
         for parameter_name, parameter in model.named_parameters():
             if parameter_name not in converted_state_dict:
-                converted_state_dict[parameter_name] = torch.zeros_like(parameter, device="cpu")
+                converted_state_dict[parameter_name] = torch.zeros_like(
+                    parameter, device="cpu"
+                )
             short_name = parameter_name.split(".")[-2]
             if key_to_dim[short_name] is None and i == 0:
                 converted_state_dict[parameter_name] = checkpoint[parameter_name]
             elif key_to_dim[short_name] == 0:
                 size = checkpoint[parameter_name].size(0)
-                converted_state_dict[parameter_name][size * i : size * (i + 1), :] = checkpoint[
-                    parameter_name
-                ]
+                converted_state_dict[parameter_name][
+                    size * i : size * (i + 1), :
+                ] = checkpoint[parameter_name]
             elif key_to_dim[short_name] == -1:
                 size = checkpoint[parameter_name].size(-1)
-                converted_state_dict[parameter_name][:, size * i : size * (i + 1)] = checkpoint[
-                    parameter_name
-                ]
+                converted_state_dict[parameter_name][
+                    :, size * i : size * (i + 1)
+                ] = checkpoint[parameter_name]
             del checkpoint[parameter_name]
         del checkpoint
 
@@ -70,6 +69,7 @@ def convert(model_path, tokenizer_path, output_path):
         f.write(json.dumps(params, indent=4))
 
     torch.save(converted_state_dict, os.path.join(output_path, "state_dict.pth"))
+
 
 if __name__ == "__main__":
     models = ["7B", "13B", "30B", "65B"]
@@ -79,12 +79,16 @@ if __name__ == "__main__":
     parser.add_argument("--output-path", type=str, required=True)
     args = parser.parse_args()
 
-    assert "tokenizer.model" in os.listdir(args.llama_path), "Tokenizer model not found in llama path"
+    assert "tokenizer.model" in os.listdir(
+        args.llama_path
+    ), "Tokenizer model not found in llama path"
     for model in models:
         if model not in os.listdir(args.llama_path):
             print(f"[WARN] Model {model} not found in llama path")
-    assert args.model in os.listdir(args.llama_path), f"Model {args.model} not found in llama path"
-    
+    assert args.model in os.listdir(
+        args.llama_path
+    ), f"Model {args.model} not found in llama path"
+
     output_path = os.path.join(args.output_path, args.model)
     os.makedirs(output_path, exist_ok=True)
 
@@ -94,5 +98,5 @@ if __name__ == "__main__":
     convert(
         os.path.join(args.llama_path, args.model),
         os.path.join(args.output_path, "tokenizer.model"),
-        output_path
+        output_path,
     )

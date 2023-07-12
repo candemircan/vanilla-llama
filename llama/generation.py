@@ -18,7 +18,7 @@ class LLaMA:
         if stop_ids is not None:
             do_stop = [False for _ in range(len(tokens))]
             for i, (t, p) in enumerate(zip(tokens, prompt_tokens)):
-                g = t[len(p):].tolist()
+                g = t[len(p) :].tolist()
                 for stop_id in stop_ids:
                     if stop_id in g:
                         do_stop[i] = True
@@ -30,7 +30,7 @@ class LLaMA:
             do_stop = [False for _ in range(len(tokens))]
             for i, (t, p) in enumerate(zip(tokens, prompt_tokens)):
                 t = t.clone()
-                g = t[len(p):]
+                g = t[len(p) :]
                 g[g == self.tokenizer.pad_id] = self.tokenizer.eos_id
                 g = g.tolist()
                 d = self.tokenizer.decode(g)
@@ -99,7 +99,7 @@ class LLaMA:
 
             if self._should_stop(tokens, prompt_tokens, stop_ids, stop_words):
                 break
-        
+
         tokens[tokens == self.tokenizer.pad_id] = self.tokenizer.eos_id
         decoded = []
         num_generated_tokens = []
@@ -108,12 +108,16 @@ class LLaMA:
             t = t[: len(prompt_tokens[i]) + max_gen_len]
             # cut to eos tok if any
             try:
-                num_generated_tokens.append(t.index(self.tokenizer.eos_id) - len(prompt_tokens[i]))
+                num_generated_tokens.append(
+                    t.index(self.tokenizer.eos_id) - len(prompt_tokens[i])
+                )
                 t = t[: t.index(self.tokenizer.eos_id)]
             except ValueError:
                 num_generated_tokens.append(max_gen_len)
             decoded.append(self.tokenizer.decode(t))
-        return decoded, dict(num_input_tokens=num_input_tokens, num_generated_tokens=num_generated_tokens)
+        return decoded, dict(
+            num_input_tokens=num_input_tokens, num_generated_tokens=num_generated_tokens
+        )
 
 
 def sample_top_p(probs, p):

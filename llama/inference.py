@@ -9,14 +9,16 @@ from .generation import LLaMA
 from .model import ModelArgs, Transformer
 from .tokenizer import Tokenizer
 
+
 class LLaMAInference:
     def __init__(self, llama_path, model, device_map="auto", **kwargs):
-
         state_dict = os.path.join(llama_path, model, "state_dict.pth")
         params_file = os.path.join(llama_path, model, "params.json")
         tokenizer_path = os.path.join(llama_path, "tokenizer.model")
 
-        assert os.path.exists(os.path.join(llama_path, model)), f"Model {model} does not exist"
+        assert os.path.exists(
+            os.path.join(llama_path, model)
+        ), f"Model {model} does not exist"
         assert os.path.exists(state_dict), f"Model {model} does not exist"
         assert os.path.exists(params_file), f"Model {model} does not exist"
         assert os.path.exists(tokenizer_path), f"Missing tokenizer in {llama_path}"
@@ -24,11 +26,7 @@ class LLaMAInference:
         with open(params_file, "r") as f:
             params = json.load(f)
 
-        model_args = dict(
-            max_seq_len=2048,
-            max_batch_size=1,
-            **params
-        )
+        model_args = dict(max_seq_len=2048, max_batch_size=1, **params)
         model_args.update(kwargs)
         model_args = ModelArgs(**model_args)
 
@@ -44,12 +42,21 @@ class LLaMAInference:
             model,
             state_dict,
             device_map=device_map,
-            no_split_module_classes=["TransformerBlock"]
+            no_split_module_classes=["TransformerBlock"],
         )
 
         self.generator = LLaMA(self.model, self.tokenizer)
 
-    def generate(self, texts, temperature=0.8, top_p=0.95, max_length=256, repetition_penalty=1, stop_ids=None, stop_words=None):
+    def generate(
+        self,
+        texts,
+        temperature=0.8,
+        top_p=0.95,
+        max_length=256,
+        repetition_penalty=1,
+        stop_ids=None,
+        stop_words=None,
+    ):
         start_time = time.time()
         results, stats = self.generator.generate(
             texts,
@@ -58,7 +65,7 @@ class LLaMAInference:
             top_p=top_p,
             repetition_penalty=repetition_penalty,
             stop_ids=stop_ids,
-            stop_words=stop_words
+            stop_words=stop_words,
         )
         end_time = time.time()
         stats["total_seconds"] = end_time - start_time

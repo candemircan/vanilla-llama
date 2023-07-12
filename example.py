@@ -8,7 +8,7 @@ if __name__ == "__main__":
     parser.add_argument("--llama-path", type=str, required=True)
     parser.add_argument("--model", type=str, required=True, choices=models)
     args = parser.parse_args()
-    
+
     start_loading = time.time()
     llama = LLaMAInference(args.llama_path, args.model, max_batch_size=2)
     print(f"Loaded model {args.model} in {time.time() - start_loading:.2f} seconds")

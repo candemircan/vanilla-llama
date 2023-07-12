@@ -4,13 +4,14 @@ from typing import List, Union
 
 from llama.inference import LLaMAInference
 
+
 def create_app(args):
     app = FastAPI()
     llama = LLaMAInference(
         args.llama_path,
         args.model,
         max_batch_size=args.max_batch_size,
-        max_seq_len=args.max_seq_len
+        max_seq_len=args.max_seq_len,
     )
 
     class GenerateRequest(BaseModel):
@@ -21,17 +22,14 @@ def create_app(args):
         stop_words: List[str] = None
         max_length: int = 512
         repetition_penalty: float = 1.0
-    
+
     def verify_token(req: Request):
         if args.token == "":
             return True
-        
+
         token = req.headers["Authorization"]
         if token != args.token:
-            raise HTTPException(
-                status_code=401,
-                detail="Unauthorized"
-            )
+            raise HTTPException(status_code=401, detail="Unauthorized")
         return True
 
     @app.get("/generate")
@@ -49,7 +47,7 @@ def create_app(args):
             top_p=gen_args.top_p,
             repetition_penalty=gen_args.repetition_penalty,
             stop_ids=gen_args.stop_ids,
-            stop_words=gen_args.stop_words
+            stop_words=gen_args.stop_words,
         )
 
         return {"generated": generated, "stats": stats}
@@ -65,7 +63,9 @@ if __name__ == "__main__":
     parser.add_argument("--host", type=str, default="0.0.0.0")
     parser.add_argument("--port", type=int, default=3000)
     parser.add_argument("--llama-path", type=str, required=True)
-    parser.add_argument("--model", type=str, required=True, choices=["7B", "13B", "30B", "65B"])
+    parser.add_argument(
+        "--model", type=str, required=True, choices=["7B", "13B", "30B", "65B"]
+    )
     parser.add_argument("--max-batch-size", type=int, default=1)
     parser.add_argument("--max-seq-len", type=int, default=2048)
     parser.add_argument("--token", type=str, default="")
