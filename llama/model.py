@@ -257,6 +257,7 @@ class Transformer(nn.Module):
         self.hl = h[:, -1, :]
 
         if lesion is not None:
+            hl = h[:, -1, :]
             hl = hl.to("cuda:0")
             hl = torch.where(lesion == 0, hl, 0)
         hl = self.hl.to(self.output.parameters().__next__().device)
